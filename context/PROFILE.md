@@ -8,11 +8,18 @@ by Curator).
 
 ## Operating Rules
 
-1. **Always check auth non-interactively first:**
-   Run `colab-glm53 auth-status --json` before any Colab action.
-   - If `"authenticated": false`, NEVER hang on interactive `colab` login and
-     NEVER ask the user to paste an OAuth verification code or token into chat.
-   - Give the user the exact `"login_command"` from the JSON output
+1. **Always check auth non-interactively first (outside restricted sandbox):**
+   `colab-glm53` and `colab` require OS Keychain / SecretService access and
+   outbound network. In sandboxed harnesses (e.g. Codex `workspace-write`),
+   always request escalated / unsandboxed execution for `colab-glm53` and `colab`
+   commands. Run `colab-glm53 auth-status --json` before any Colab action:
+   - If `"sandbox_blocked": true`, DO NOT ask the user to log in again; re-run
+     the command with escalated / unsandboxed permissions (or recommend launching
+     with `--yolo`).
+   - If `"authenticated": false` (and not sandbox-blocked), NEVER hang on
+     interactive `colab` login and NEVER ask the user to paste an OAuth
+     verification code or token into chat. Give the user the exact
+     `"login_command"` from the JSON output
      (`curator profile exec colab-g4-keeper -- colab usage`) to run in a
      separate terminal window, wait for confirmation, then re-verify with
      `colab-glm53 auth-status --json`.

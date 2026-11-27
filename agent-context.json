@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "name": "colab-g4-keeper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "context": {
     "modules": [
       {
@@ -13,7 +13,7 @@
     "skills": {
       "colab-g4-glm53": {
         "git": "https://github.com/relux-works/curator-profile-colab-g4.git",
-        "revision": "be46bb90d08f811ca963cc1b971225442d7b25e3",
+        "revision": "2326d1c2a215ed6feda0cc150970e7342b8be393",
         "directory": "skills/colab-g4-glm53"
       }
     }
