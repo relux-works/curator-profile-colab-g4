@@ -1,0 +1,80 @@
+{
+  "schema_version": 10,
+  "build_roots": [
+    "tools/colab-glm53"
+  ],
+  "commands": {
+    "colab-glm53": {
+      "type": "build",
+      "driver": "go-v1",
+      "source_dir": "tools/colab-glm53/cmd/colab-glm53"
+    }
+  },
+  "capabilities": {
+    "network": [
+      "127.0.0.1",
+      "accounts.google.com",
+      "colab.research.google.com",
+      "files.pythonhosted.org",
+      "github.com",
+      "huggingface.co",
+      "oauth2.googleapis.com",
+      "pypi.org",
+      "sdk.cloud.google.com"
+    ],
+    "filesystem": [
+      "~/.ssh",
+      "~/.config/colab-cli",
+      "/tmp"
+    ],
+    "exec": [
+      "caffeinate",
+      "colab",
+      "curl",
+      "pkill",
+      "security",
+      "ssh",
+      "ssh-keygen"
+    ],
+    "secrets": [
+      "colab-oauth-token",
+      "colab-ssh-key"
+    ],
+    "env_read": [
+      "COLAB_BIN",
+      "COLAB_MAX_ATTEMPTS",
+      "COLAB_RETRY_BASE",
+      "COLAB_SSH_KEY",
+      "COLAB_WAIT_CAP",
+      "HOME",
+      "PATH",
+      "TMPDIR"
+    ],
+    "prompt_scope": "Provision, monitor, tunnel, and tear down Google Colab G4 (RTX PRO 6000 Blackwell 96 GB) instances serving GLM-5.3-Flash via Project Maya on local 127.0.0.1."
+  },
+  "dependencies": {
+    "commands": {
+      "curl": {
+        "type": "system",
+        "command": "curl",
+        "hint": "Install curl via the OS package manager."
+      },
+      "ssh": {
+        "type": "system",
+        "command": "ssh",
+        "hint": "Install the OpenSSH client via the OS package manager."
+      },
+      "ssh-keygen": {
+        "type": "system",
+        "command": "ssh-keygen",
+        "hint": "Install the OpenSSH client via the OS package manager."
+      }
+    },
+    "tools": {
+      "colab": {
+        "id": "pypi/google-colab-cli",
+        "version": ">=0.8.0"
+      }
+    }
+  }
+}
