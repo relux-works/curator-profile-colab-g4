@@ -14,7 +14,7 @@ curator profile install https://github.com/relux-works/curator-profile-colab-g4.
 ```
 
 Curator automatically:
-1. Provisions a verified Go toolchain into `~/.curator/tools/store/go/` if Go is not installed on the host ([CIP-0039](https://github.com/relux-works/curator-spec/blob/main/cips/CIP-0039-manager-provisioned-go-toolchain.md)).
+1. Provisions a verified Go toolchain into `~/.curator/tools/store/go/` if Go is not installed on the host ([CIP-0040](https://github.com/relux-works/curator-spec/blob/main/cips/CIP-0040-manager-provisioned-go-toolchain.md)).
 2. Compiles `colab-glm53` from `skills/colab-g4-glm53/tools/colab-glm53` via the closed `go-v1` build driver.
 3. Provisions `astral-sh/uv` (Aqua backend) and `google-colab-cli` (`colab`, curated PyPI backend) into `~/.curator/tools/store/` ([CIP-0007 v1](https://github.com/relux-works/curator-spec/blob/main/protocol/tool-provisioning.md)).
 4. Materializes the profile's Slice B-a command root (`colab` + `colab-glm53`) under `~/.curator/environments/colab-g4-keeper/commands/<generation>/<platform>/bin/`.
