@@ -65,12 +65,14 @@ var tiers = map[string]tierSpec{
 }
 
 type authStatusReport struct {
-	Authenticated bool   `json:"authenticated"`
-	ColabBin      string `json:"colab_bin,omitempty"`
-	Platform      string `json:"platform"`
-	Reason        string `json:"reason,omitempty"`
-	UsageSummary  string `json:"usage_summary,omitempty"`
-	LoginCommand  string `json:"login_command,omitempty"`
+	Authenticated  bool   `json:"authenticated"`
+	SandboxBlocked bool   `json:"sandbox_blocked,omitempty"`
+	ColabBin       string `json:"colab_bin,omitempty"`
+	Platform       string `json:"platform"`
+	Reason         string `json:"reason,omitempty"`
+	Hint           string `json:"hint,omitempty"`
+	UsageSummary   string `json:"usage_summary,omitempty"`
+	LoginCommand   string `json:"login_command,omitempty"`
 }
 
 func main() {
@@ -185,12 +187,27 @@ func checkAuthStatus(profile string) authStatusReport {
 	// On macOS, check Keychain item existence WITHOUT -w (no secret material read)
 	// before invoking colab so an unauthenticated host returns instantaneously
 	// without spawning Python or hitting Google OAuth endpoints.
+	// Distinguish a genuinely missing Keychain item from a restricted agent
+	// sandbox (e.g., Codex Seatbelt workspace-write) that blocks SecurityServer
+	// (SecKeychainSearchCreateFromAttributes / errSecParam -50).
 	if runtime.GOOS == "darwin" {
 		home, _ := os.UserHomeDir()
 		legacyToken := filepath.Join(home, ".config", "colab-cli", "token.json")
 		_, legacyErr := os.Stat(legacyToken)
-		kcErr := exec.Command("security", "find-generic-password", "-s", "google-colab-cli", "-a", "oauth_token").Run()
+		kcOutBytes, kcErr := exec.Command("security", "find-generic-password", "-s", "google-colab-cli", "-a", "oauth_token").CombinedOutput()
 		if kcErr != nil && legacyErr != nil {
+			kcLower := strings.ToLower(string(kcOutBytes))
+			if strings.Contains(kcLower, "seckeychainsearchcreatefromattributes") ||
+				strings.Contains(kcLower, "one or more parameters passed") ||
+				strings.Contains(kcLower, "operation not permitted") ||
+				strings.Contains(kcLower, "user interaction is not allowed") ||
+				strings.Contains(kcLower, "(-50") {
+				rep.SandboxBlocked = true
+				rep.Reason = "sandbox_keychain_blocked"
+				rep.LoginCommand = ""
+				rep.Hint = "Command ran inside a restricted agent sandbox that blocks macOS Keychain (SecurityServer) and/or outbound network. Re-run with escalated/unsandboxed execution, or launch the agent with --yolo."
+				return rep
+			}
 			rep.Reason = "missing_oauth_token"
 			return rep
 		}
@@ -203,6 +220,20 @@ func checkAuthStatus(profile string) authStatusReport {
 	outBytes, runErr := cmd.CombinedOutput()
 	out := strings.TrimSpace(string(outBytes))
 	lower := strings.ToLower(out)
+
+	if strings.Contains(lower, "could not read the oauth token from the os keyring") ||
+		strings.Contains(lower, "can't get password from keychain") ||
+		strings.Contains(lower, "(-50") ||
+		strings.Contains(lower, "operation not permitted") ||
+		strings.Contains(lower, "nodename nor servname") ||
+		strings.Contains(lower, "temporary failure in name resolution") ||
+		strings.Contains(lower, "failed to establish a new connection") {
+		rep.SandboxBlocked = true
+		rep.Reason = "sandbox_keychain_or_network_blocked"
+		rep.LoginCommand = ""
+		rep.Hint = "Command ran inside a restricted agent sandbox that blocks OS keyring and/or outbound network. Re-run with escalated/unsandboxed execution, or launch the agent with --yolo."
+		return rep
+	}
 
 	if strings.Contains(lower, "applicationdefaultauthcode") ||
 		strings.Contains(lower, "enter the authorization code") ||
@@ -257,6 +288,8 @@ func cmdAuthStatus(args []string) int {
 		_ = enc.Encode(rep)
 	} else if rep.Authenticated {
 		fmt.Printf("Authenticated: yes (colab=%s)\n%s\n", rep.ColabBin, rep.UsageSummary)
+	} else if rep.SandboxBlocked {
+		fmt.Printf("Authenticated: unknown (%s)\n%s\n", rep.Reason, rep.Hint)
 	} else {
 		fmt.Printf("Authenticated: no (%s)\nRun this command in a separate terminal window to sign in with your Google AI Ultra account:\n  %s\n", rep.Reason, rep.LoginCommand)
 	}

@@ -18,13 +18,19 @@ This skill provides two profile-provisioned commands on `PATH`:
 
 ## Mandatory First Step: Non-Interactive Auth Preflight
 
-Before running any Colab operation (`start`, `sessions`, `usage`, `status`, `stop`), ALWAYS run:
+> **Sandbox note (Codex / macOS Seatbelt):** `colab-glm53` and `colab` require **OS Keychain / SecretService access and outbound network** (`colab.research.google.com`, `oauth2.googleapis.com`, SSH tunnels). If you are running inside a restricted sandbox (such as Codex CLI `native` / `workspace-write`), **always request unsandboxed / escalated execution** for `colab-glm53` and `colab` commands (or advise launching with `--yolo`).
+
+Before running any Colab operation (`start`, `sessions`, `usage`, `status`, `stop`), ALWAYS run (unsandboxed / escalated):
 
 ```bash
 colab-glm53 auth-status --json
 ```
 
-If `"authenticated": false`:
+If `"sandbox_blocked": true`:
+- **DO NOT** ask the user to sign in again — the OAuth token may already be stored in the OS Keychain, but your shell sandbox blocked Keychain or network access.
+- Re-run `colab-glm53 auth-status --json` with escalated / unsandboxed execution (or instruct the user to launch with `--yolo`).
+
+If `"authenticated": false` (and `"sandbox_blocked"` is not `true`):
 1. **NEVER** run interactive `colab usage` or `colab new` yourself (it blocks waiting for an OAuth verification code).
 2. **NEVER** ask the user to paste an OAuth code or token into this chat.
 3. Show the user the exact `"login_command"` from the JSON output and ask them to run it in a separate terminal window:
