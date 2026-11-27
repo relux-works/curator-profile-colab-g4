@@ -13,7 +13,7 @@ without touching your global `PATH`.
 
 ## Quickstart — Variant A (1 binary: `curator` only, lowest barrier)
 
-### 1. Install `curator` (`v0.15.0`)
+### 1. Install `curator` (`v0.15.1`)
 
 **macOS (Homebrew):**
 ```bash
@@ -23,15 +23,14 @@ brew install relux-works/tap/curator
 **Ubuntu Linux (`.deb`, zero extra dependencies):**
 ```bash
 # amd64 (use linux_arm64 on ARM64)
-curl -fsSLO https://github.com/relux-works/curator/releases/download/v0.15.0/curator_0.15.0_linux_amd64.deb
-sudo dpkg -i curator_0.15.0_linux_amd64.deb
+curl -fsSLO https://github.com/relux-works/curator/releases/download/v0.15.1/curator_0.15.1_linux_amd64.deb
+sudo dpkg -i curator_0.15.1_linux_amd64.deb
 ```
 *(Alternatively, on macOS or Linux with `gh` or `cosign` installed: `curl -fsSL https://raw.githubusercontent.com/relux-works/curator/main/install.sh | sh`.)*
 
-### 2. Initialize Curator (once) and install this profile
+### 2. Install this profile (no `bootstrap` needed)
 
 ```bash
-curator bootstrap --if-missing --non-interactive --skills-root ~/.curator/skills
 curator profile install https://github.com/relux-works/curator-profile-colab-g4.git --as colab-g4-keeper
 ```
 
